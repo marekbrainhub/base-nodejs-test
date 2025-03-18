@@ -10,5 +10,5 @@ export const iconikCustomActionConfig = {
   app_id: ICONIK_APP_ID,
   type: 'POST',
   context: 'ASSET',
-  url: `${API_URL}${ICONIK_CUSTOM_ACTION_URL_PATH}`,
+  url: `${API_URL}/api${ICONIK_CUSTOM_ACTION_URL_PATH}`,
 }
