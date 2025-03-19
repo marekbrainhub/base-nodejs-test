@@ -1,8 +1,7 @@
-import { assetCollection } from "src/utils/mongo-db";
+import { assetCollection, commentCollection } from "src/utils/mongo-db";
 import { iconikClient } from "src/utils/iconik-client";
 import { frameIoClient } from "src/utils/frame-io-client";
-import { commentSyncWebhookPayloadSchema, type CommentSyncWebhookPayload } from "src/utils/frameio-comment-sync-schema";
-import type { AssetCollection } from "./iconik-custom-action-use-case";
+import { type CommentSyncWebhookPayload } from "src/utils/frameio-comment-sync-schema";
 
 type Comment = {
   id: string,
@@ -16,10 +15,15 @@ type Comment = {
 
 export const handleCommentEvent = async (event: CommentSyncWebhookPayload) => {
  try {
+    // If it's a deleted comment then we can't look it up in the API.
+    if (event.type === 'comment.deleted') {
+      return deleteIconikComment(event.resource.id)
+    }
+
     const comment = await frameIoClient.get<Comment>(`comments/${event.resource.id}`)
     const frameIoAssetId = comment.data.asset_id
 
-    const mapping = await assetCollection.findOne<AssetCollection>({ frameIoAssetId })
+    const mapping = await assetCollection.findOne({ frameIoAssetId })
 
     if (!mapping) {
       console.warn(`No mapping found for Frame.io asset ${frameIoAssetId}`);
@@ -55,6 +59,27 @@ const createIconikComment = async (iconikAssetId: string, comment: Comment) => {
     body,
   )
 
-  console.log(`Created comment on Iconik asset`)
-  console.log(response.data)
+  await commentCollection.insertOne({
+    frameIoCommentId: comment.id,
+    iconikAssetId,
+    iconikCommentId: response.data.id,
+  })
+
+  console.log(`Created comment on Iconik asset ${iconikAssetId}`)
+}
+
+const deleteIconikComment = async (frameIoCommentId: string) => {
+  const mapping = await commentCollection.findOne({ frameIoCommentId })
+
+  if (!mapping) {
+    console.warn(`No matching Iconik comment found for Frame.io comment ${frameIoCommentId}`)
+    return;
+  }
+
+  const { iconikCommentId, iconikAssetId } = mapping
+
+  await iconikClient.delete(`/assets/v1/assets/${iconikAssetId}/segments/${iconikCommentId}`)
+  await commentCollection.deleteOne({ iconikCommentId })
+
+  console.log(`Deleted Iconik comment ${iconikCommentId} on Iconik asset ${iconikAssetId}`)
 }

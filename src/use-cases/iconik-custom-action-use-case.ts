@@ -4,11 +4,6 @@ import { iconikClient } from 'src/utils/iconik-client.js'
 import { IconikCustomActionPayload } from 'src/utils/iconik-custom-action-payload-schema.js'
 import { assetCollection } from 'src/utils/mongo-db.js'
 
-export type AssetCollection = {
-  iconikAssetId: string,
-  frameIoAssetId: string,
-}
-
 export async function iconikCustomActionUseCase(payload: IconikCustomActionPayload) {
   const assetId = payload.asset_ids[0]
 
