@@ -17,7 +17,6 @@ await amqpChannel.consume(COMMENT_SYNC_QUEUE_NAME, async (message) => {
   if (message) {
     try {
       const data = JSON.parse(message.content.toString())
-      console.log('Processing comment sync:', data)
       const payload = await commentSyncWebhookPayloadSchema.validate(data)
       handleCommentEvent(payload)
       amqpChannel.ack(message)
