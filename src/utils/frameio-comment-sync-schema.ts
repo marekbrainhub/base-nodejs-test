@@ -1,4 +1,5 @@
 import {
+  InferType,
   object,
   string,
 } from 'yup'
@@ -10,3 +11,5 @@ export const commentSyncWebhookPayloadSchema = object({
   type: string().oneOf(['comment.created', 'comment.updated', 'comment.deleted', 'comment.completed', 'comment.uncompleted']).required(),
   user: object({ id: string().required() }),
 })
+
+export type CommentSyncWebhookPayload = InferType<typeof commentSyncWebhookPayloadSchema>

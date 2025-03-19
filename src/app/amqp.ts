@@ -1,3 +1,4 @@
+import { handleCommentEvent } from 'src/use-cases/handle-comment-sync-action'
 import { iconikCustomActionUseCase } from 'src/use-cases/iconik-custom-action-use-case.js'
 import {
   amqpChannel,
@@ -17,9 +18,9 @@ await amqpChannel.consume(COMMENT_SYNC_QUEUE_NAME, async (message) => {
     try {
       const data = JSON.parse(message.content.toString())
       const payload = await commentSyncWebhookPayloadSchema.validate(data)
-      console.log('Processed:', payload)
+      handleCommentEvent(payload)
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error('Error processing message.');
       amqpChannel.nack(message, false, false);
     }
   }
