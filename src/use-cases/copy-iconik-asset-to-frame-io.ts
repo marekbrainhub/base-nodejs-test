@@ -4,7 +4,7 @@ import { iconikClient } from 'src/utils/iconik-client.js'
 import { IconikCustomActionPayload } from 'src/utils/iconik-custom-action-payload-schema.js'
 import { assetCollection } from 'src/utils/mongo-db.js'
 
-export async function iconikCustomActionUseCase(payload: IconikCustomActionPayload) {
+export async function copyIconikAssetToFrameIo(payload: IconikCustomActionPayload) {
   const assetId = payload.asset_ids[0]
 
   const { data: iconikAsset } = await iconikClient.get(`/assets/v1/assets/${assetId}`)

@@ -1,5 +1,5 @@
 import { handleCommentEvent } from 'src/use-cases/handle-comment-sync-action'
-import { iconikCustomActionUseCase } from 'src/use-cases/iconik-custom-action-use-case.js'
+import { copyIconikAssetToFrameIo } from 'src/use-cases/copy-iconik-asset-to-frame-io'
 import {
   amqpChannel,
   COMMENT_SYNC_QUEUE_NAME,
@@ -10,7 +10,7 @@ import { iconikCustomActionPayloadSchema } from 'src/utils/iconik-custom-action-
 
 await amqpChannel.consume(CUSTOM_ACTION_QUEUE_NAME, async (message) => {
   const payload = await iconikCustomActionPayloadSchema.validate(message!.content.toString())
-  await iconikCustomActionUseCase(payload)
+  await copyIconikAssetToFrameIo(payload)
 })
 
 await amqpChannel.consume(COMMENT_SYNC_QUEUE_NAME, async (message) => {

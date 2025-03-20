@@ -48,7 +48,7 @@ export const handleCommentEvent = async (event: CommentSyncWebhookPayload) => {
     }
   } catch (error: unknown) {
     console.log('Caught error')
-    if (error instanceof AxiosError && error.response) { // Axios error
+    if (error instanceof AxiosError && error.response) {
       console.error(error.response.status, error.response.data)
     } else {
       console.error(error)
