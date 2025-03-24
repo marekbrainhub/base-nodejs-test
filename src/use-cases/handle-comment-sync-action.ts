@@ -7,6 +7,7 @@ import { AxiosError } from "axios";
 type Comment = {
   id: string,
   asset_id: string,
+  parent_id: string,
   completed: boolean,
   owner: {
     email: string,
@@ -58,9 +59,21 @@ export const handleCommentEvent = async (event: CommentSyncWebhookPayload) => {
 }
 
 const createIconikComment = async (iconikAssetId: string, comment: Comment) => {
+  let parent_id
+  if (comment.parent_id) {
+    const mapping = await commentCollection.findOne({ frameIoCommentId: comment.parent_id })
+
+    if (!mapping) {
+      console.warn(`No parent mapping found for Frame.io comment ${comment.id}`);
+    }
+
+    parent_id = mapping?.iconikCommentId
+  }
+
   const body = {
     segment_type: 'COMMENT',
     segment_text: comment.text,
+    parent_id,
     user_info: {
       email: comment.owner.email,
       first_name: comment.owner.name,
@@ -102,7 +115,7 @@ const updateIconikComment = async (comment: Comment) => {
 
   const { iconikAssetId, iconikCommentId } = mapping
 
-  const response = await iconikClient.patch(
+  await iconikClient.patch(
     `/assets/v1/assets/${iconikAssetId}/segments/${iconikCommentId}`,
     body,
   )
